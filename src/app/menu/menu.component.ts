@@ -10,7 +10,6 @@ import { DishService } from '../services/dish.service';
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss']
 })
-
 export class MenuComponent implements OnInit {
 
   dishes: Dish[];
