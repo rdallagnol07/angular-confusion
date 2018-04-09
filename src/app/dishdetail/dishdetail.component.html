@@ -29,17 +29,17 @@
     <md-card *ngIf="dish">
         <md-card-header>
           <md-card-title>
-            <h2>Comments</h2>
-            <br>
+            <h3>Comments</h3>
           </md-card-title>
         </md-card-header>
         <md-card-content *ngFor="let comment of dish.comments">
           <p>{{comment.comment}}</p>
           <p>{{comment.rating}}</p>
           <p><span>--</span> {{comment.author}} {{comment.date | date}}</p>
-          <br>
         </md-card-content>
     </md-card>
   </div>
-
+  <div [hidden]="dish">
+    <md-spinner></md-spinner><h4>Loading . . . Please Wait</h4>
+  </div>
 </div>
