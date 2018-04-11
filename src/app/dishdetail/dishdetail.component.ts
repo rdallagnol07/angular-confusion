@@ -1,53 +1,14 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import 'rxjs/add/operator/switchMap';
 
 import { Dish } from '../shared/dish';
+import { DISHES } from '../shared/dishes';
+import { Comment } from '../shared/comment';
 
 import { DishService } from '../services/dish.service';
-
-
-const DISH = {
-  name: 'Uthappizza',
-  image: '/assets/images/uthappizza.png',
-  category: 'mains',
-  label: 'Hot',
-  price: '4.99',
-  description: 'A unique combination of Indian Uthappam (pancake) and Italian pizza, topped with Cerignola olives, ripe vine cherry tomatoes, Vidalia onion, Guntur chillies and Buffalo Paneer.',
-  comments: [
-    {
-      rating: 5,
-      comment: "Imagine all the eatables, living in conFusion!",
-      author: "John Lemon",
-      date: "2012-10-16T17:57:28.556094Z"
-    },
-    {
-      rating: 4,
-      comment: "Sends anyone to heaven, I wish I could get my mother-in-law to eat it!",
-      author: "Paul McVites",
-      date: "2014-09-05T17:57:28.556094Z"
-    },
-    {
-      rating: 3,
-      comment: "Eat it, just eat it!",
-      author: "Michael Jaikishan",
-      date: "2015-02-13T17:57:28.556094Z"
-    },
-    {
-      rating: 4,
-      comment: "Ultimate, Reaching for the stars!",
-      author: "Ringo Starry",
-      date: "2013-12-02T17:57:28.556094Z"
-    },
-    {
-      rating: 2,
-      comment: "It's your birthday, we're gonna party!",
-      author: "25 Cent",
-      date: "2011-12-02T17:57:28.556094Z"
-    }
-  ]
-};
 
 @Component({
   selector: 'app-dishdetail',
@@ -56,14 +17,37 @@ const DISH = {
 })
 export class DishdetailComponent implements OnInit {
 
+  commentForm: FormGroup;
+
+  comment: Comment;
   dish: Dish;
   dishIds: number[];
   prev: number;
   next: number;
 
+  formErrors = {
+    'author': '',
+    'comment': '',
+  };
+
+  validationMessages = {
+    'author': {
+      'required': 'Name is required.',
+      'minlength': 'Name must be at least 2 characters long.',
+      'maxlength': 'Name cannot be more than 25 characters long.'
+    },
+    'comment': {
+      'required': 'Comment is required.',
+      'minlength': 'Name must be at least 5 characters long.'
+    },
+  };
+
   constructor(private dishservice: DishService,
     private route: ActivatedRoute,
-    private location: Location) { }
+    private location: Location,
+    private fb: FormBuilder) {
+      this.createForm();
+    }
 
   ngOnInit() {
     this.dishservice.getDishIds().subscribe(dishIds => this.dishIds = dishIds);
@@ -80,6 +64,56 @@ export class DishdetailComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  createForm(): void {
+    this.commentForm = this.fb.group({
+      author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
+      rating: 5,
+      comment: ['', [Validators.required, Validators.minLength(5)]],
+      date:''
+    });
+
+    this.commentForm.valueChanges
+    .subscribe(data => this.onValueChanged(data));
+
+    this.onValueChanged(); // (re)set validation messages now
+
+  }
+
+  onValueChanged(data?: any) {
+    if (!this.commentForm) { return; }
+    const form = this.commentForm;
+    for (const field in this.formErrors) {
+      // clear previous error message (if any)
+      this.formErrors[field] = '';
+      const control = form.get(field);
+      if (control && control.dirty && !control.valid) {
+        const messages = this.validationMessages[field];
+        for (const key in control.errors) {
+          this.formErrors[field] += messages[key] + ' ';
+        }
+      }
+    }
+  }
+
+  onSubmit() {
+    //set date to ISOstring
+    this.commentForm.value.date =  new Date().toISOString();
+
+    //set data model to match
+    this.comment = this.commentForm.value;
+
+    //push data to DISHES
+    DISHES[this.dish.id].comments.push(this.comment);
+
+    //reset form after submission
+    this.commentForm.reset({
+      author: '',
+      rating: 5,
+      comment: '',
+      date: '',
+    });
   }
 
 }
