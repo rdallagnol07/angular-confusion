@@ -6,8 +6,8 @@
     fxLayoutGap="10px"
     fxLayoutGap.xs="0">
 
-  <div fxFlex="40">
-    <md-card *ngIf="dish">
+  <div fxFlex="40" *ngIf="dish" [@visibility]="visibility">
+    <md-card>
       <md-card-header>
         <md-card-title>
           <h3>{{dish.name | uppercase}}</h3>
@@ -28,8 +28,8 @@
     </md-card>
   </div>
 
-  <div fxFlex="40">
-    <md-card *ngIf="dish">
+  <div fxFlex="40" *ngIf="dish" [@visibility]="visibility">
+    <md-card>
       <md-card-header>
         <md-card-title>
           <h2>Comments</h2>
